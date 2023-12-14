@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Newsletter Form</title>
+    <script src="https://cdn.tiny.cloud/1/2qvunvij9bugrkra5b3t4nxcm6dtefv7t76qfbg2m5ipfaj0/tinymce/5/tinymce.min.js"></script>
+    <script>
+      tinymce.init({
+        selector: "#text",
+        plugins: "autolink lists link image charmap print preview",
+        toolbar:
+          "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | outdent indent | link image",
+      });
+    </script>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f4f4f4;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+      }
+
+      h1 {
+        color: #333;
+      }
+
+      form {
+        max-width: 80%;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      textarea {
+        height: 35vh;
+      }
+
+      button {
+        background-color: #007bff;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .d-none {
+        display: none;
+      }
+      .red {
+        color: red;
+      }
+      .green {
+        color: green;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Dynasoft Newsletter Form</h1>
+    <form id="newsletterForm" onsubmit="submitted(e)">
+      <label for="subject">Subject:</label>
+      <input type="text" id="subject" name="subject" required />
+      <br />
+      <label for="text">Text:</label>
+      <textarea id="text" name="text" required></textarea>
+      <br />
+      <label for="key">Letter Key:</label>
+      <input type="text" id="key" />
+      <button type="button" onclick="submitForm()">Submit</button>
+    </form>
+    <h2 class="d-none red" id="verify"></h2>
+  </body>
+</html>
+
+<script>
+  function submitted(e) {
+    e.preventDefault();
+  }
+  async function submitForm() {
+    const subject = document.getElementById("subject").value;
+    const text = tinymce.get("text").getContent();
+    const key = document.getElementById("key").value;
+    document.getElementById("verify").classList.remove("d-none");
+    if (subject == "" || text == "" || key == "") {
+      document.getElementById("verify").classList.add("red");
+      document.getElementById("verify").innerHTML = "Fill all the fields!!";
+      return;
+    } else {
+      const data = { pass: key, text: text, subject: subject };
+      await fetch("http://localhost:3000/sendMails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          document.getElementById("verify").classList.add("green");
+          document.getElementById("verify").innerHTML = "newsletter sent!!";
+          document.getElementById("newsletterForm").classList.add("d-none");
+        })
+        .catch((error) => {
+          alert("Error submitting newsletter.");
+        });
+    }
+  }
+</script>
